@@ -16,24 +16,23 @@ status_list = []
 
 
 def site_status():
-    response = requests.get(WEB_ADDRESS, verify=False, timeout=15)
-    logging.debug(response)
+    last_byte_time = 'N/A'
+    connect = 'failure'
+    response = ''
 
-    if not response.raise_for_status():
-        try:
+    try:
+        response = requests.get(WEB_ADDRESS, verify=False, timeout=15)
+        logging.debug(response)
+        if not response.raise_for_status():
             start_time = timeit.default_timer()
             with urlopen(WEB_ADDRESS) as http:
                 http.read()
             last_byte_time = timeit.default_timer() - start_time
             connect = 'success'
-        except Exception as err:
-            errstr = err
-            raise OSError(f'An error occurred: {errstr}') from err
-    else:
-        last_byte_time = 'N/A'
-        connect = 'failure'
+    except requests.exceptions.RequestException as req:
+        logging.debug(req)
 
-    _package_data(last_byte=last_byte_time, connect=connect, response_code=response.status_code)
+    _package_data(last_byte=last_byte_time, connect=connect, response_code=response)
 
 
 def _package_data(last_byte, connect, response_code):
