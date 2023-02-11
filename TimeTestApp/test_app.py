@@ -4,32 +4,31 @@ import sched
 import sys
 import time
 import timeit
-import urllib
+from urllib.request import urlopen
 from datetime import datetime
 
-import keyboard
 import requests
 
-web_address = sys.argv[1]
+WEB_ADDRESS = sys.argv[1]
 no_of_calls = sys.argv[2]
 scheduler = sched.scheduler(time.time, time.sleep)
 status_list = []
 
 
 def site_status():
-    response = requests.get(web_address)
+    response = requests.get(WEB_ADDRESS, verify=False, timeout=15)
     logging.debug(response)
 
     if not response.raise_for_status():
         try:
             start_time = timeit.default_timer()
-            http = urllib.request.urlopen(web_address)
-            http.read()
+            with urlopen(WEB_ADDRESS) as http:
+                http.read()
             last_byte_time = timeit.default_timer() - start_time
             connect = 'success'
         except Exception as err:
-            errno, errstr = err
-            raise OSError('An error occurred: {}'.format(errstr))
+            errstr = err
+            raise OSError(f'An error occurred: {errstr}') from err
     else:
         last_byte_time = 'N/A'
         connect = 'failure'
@@ -62,14 +61,14 @@ def _cycler(calls_per_second, callback, *args, **kw):
 def _json_to_file(data):
     filename = _create_json_filename()
 
-    with open(filename, 'w') as json_file:
+    with open(filename, 'w', encoding='utf-8') as json_file:
         json.dump(data, json_file)
     json_file.close()
 
 
 def _create_json_filename():
-    now = datetime.now().strftime("%Y%m%d%H%M%S")
-    logging.debug(f'filename is {now}.json')
+    now = datetime.now().strftime('%Y%m%d%H%M%S')
+    logging.debug('filename is %s.json', now)
     return f'{now}.json'
 
 
@@ -78,9 +77,12 @@ def main():
     try:
         while True:
             _cycler(int(no_of_calls), site_status)
-            logging.debug("Running cycler")
+            logging.debug('Running cycler')
             scheduler.run()
-    except KeyboardInterrupt or keyboard.is_pressed('q'):
+    except KeyboardInterrupt:
+        logging.info('Cycle interrupted by user')
+    finally:
+        logging.debug('json logs saving to file')
         _json_to_file(status_list)
 
 
@@ -89,6 +91,3 @@ if __name__ == '__main__':
         main()
     except SystemExit as e:
         raise e
-    except Exception as ex:
-        logging.info(str(ex))
-        sys.exit(1)
