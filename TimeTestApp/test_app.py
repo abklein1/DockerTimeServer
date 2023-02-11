@@ -42,7 +42,6 @@ def _package_data(last_byte, connect, response_code):
             'connection_status': connect,
             'response_status_code': response_code,
             'time_of_log': now}
-    logging.debug(data)
 
     status_list.append(data)
 
