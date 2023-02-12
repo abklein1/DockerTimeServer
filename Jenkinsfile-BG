@@ -37,14 +37,14 @@ pipeline {
                         stage('Validate Green Deploy and Swap') {
                             steps {
                                 sh '''
-                                if [ "\$(curl -o /dev/null - silent - head -write-out '%{http_code}' ubuntu@${greenTarget}:8080/time)" -eq 200]
+                                if [ "\$(curl -o /dev/null - silent - head -write-out '%{http_code}' ${greenTarget}:8080/time)" -eq 200]
                                 then
                                     echo "Build Successful"
-                                    curl -I ubuntu@${greenTarget}
+                                    curl -I ${greenTarget}
                                     aws elbv2 modify-listener --region ${region} --listener-arn ${listenerARN} --default-actions '[{"Type": "forward","Order": 1,"ForwardConfig": {"TargetGroups": [{"TargetGroupArn": "${greenARN}", "Weight": 0 },{"TargetGroupArn": "${blueARN}", "Weight": 1 }],"TargetGroupStickinessConfig": {"Enabled": true,"DurationSeconds": 1}}}]'
                                 else
                                     echo "Build Failure"
-                                    curl -I ubuntu@${greenTarget}
+                                    curl -I ${greenTarget}
                                 exit 2
                                 fi
                                 '''
@@ -66,21 +66,21 @@ pipeline {
                         }
                         stage('Deploying to Blue') {
                             steps {
-                                sh '''scp -v -o StrictHostKeyChecking=no -i /var/lib/jenkins/secrets/keypairklein.pem target/*jar ubuntu@${blueTarget}:/home/ubuntu/RELEASE/${version}'''
-                                sh '''ssh -t ubuntu@${blueTarget} "sudo java -jar ${oldVersion} stop && sudo java -jar ${version}"'''
+                                sh '''scp -v -o StrictHostKeyChecking=no -i /var/lib/jenkins/secrets/keypairklein.pem target/*jar ${blueTarget}:/home/ubuntu/RELEASE/${version}'''
+                                sh '''ssh -t ${blueTarget} "sudo java -jar ${oldVersion} stop && sudo java -jar ${version}"'''
                             }
                         }
                         stage('Validate Blue Deploy and Swap') {
                             steps {
                                 sh '''
-                                if [ "\$(curl -o /dev/null - silent - head -write-out '%{http_code}' ubuntu@${blueTarget}:8080/time)" -eq 200]
+                                if [ "\$(curl -o /dev/null - silent - head -write-out '%{http_code}' ${blueTarget}:8080/time)" -eq 200]
                                 then
                                     echo "Build Successful"
-                                    curl -I ubuntu@${blueTarget}
+                                    curl -I ${blueTarget}
                                     aws elbv2 modify-listener --listener-arn ${listenerARN} --default-actions '[{"Type": "forward","Order": 1,"ForwardConfig": {"TargetGroups": [{"TargetGroupArn": "${greenARN}", "Weight": 0 },{"TargetGroupArn": "${blueARN}", "Weight": 1 }],"TargetGroupStickinessConfig": {"Enabled": true,"DurationSeconds": 1}}}]'
                                 else
                                     echo "Build Failure"
-                                    curl -I ubuntu@${blueTarget}
+                                    curl -I ${blueTarget}
                                 exit 2
                                 fi
                                 '''
