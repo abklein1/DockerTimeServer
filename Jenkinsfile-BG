@@ -7,6 +7,8 @@ pipeline {
         listenerARN = 'arn:aws:elasticloadbalancing:us-east-2:283044168142:listener/app/BG-load-balancer/fb5f67b4b97973d0/44f32aec7ee9095a'
         blueARN = 'arn:aws:elasticloadbalancing:us-east-2:283044168142:targetgroup/Blue/28fafd93d214aacb'
         greenARN = 'arn:aws:elasticloadbalancing:us-east-2:283044168142:targetgroup/Green/4cf40e1547e1c331'
+        blueTarget = 'ubuntu@ec2-3-16-114-63.us-east-2.compute.amazonaws.com'
+        greenTarget = 'ubuntu@ec2-3-143-251-12.us-east-2.compute.amazonaws.com'
     }
     stages {
         stage('Begin Deploy') {
@@ -25,21 +27,21 @@ pipeline {
                         }
                         stage('Deploying to Green') {
                             steps {
-                                sh '''scp -v -o StrictHostKeyChecking=no -i /var/lib/jenkins/secrets/keypairklein.pem target/*jar ubuntu@ec2-3-143-251-12.us-east-2.compute.amazonaws.com:/home/ubuntu/RELEASE/${version}'''
-                                sh '''ssh -t ubuntu@ec2-3-143-251-12.us-east-2.compute.amazonaws.com "sudo java -jar ${oldversion} stop && sudo java -jar ${version}"'''
+                                sh '''scp -v -o StrictHostKeyChecking=no -i /var/lib/jenkins/secrets/keypairklein.pem target/*jar ubuntu@${greenTarget}:/home/ubuntu/RELEASE/${version}'''
+                                sh '''ssh -t ubuntu@${greenTarget} "sudo java -jar ${oldversion} stop && sudo java -jar ${version}"'''
                             }
                         }
                         stage('Validate Green Deploy and Swap') {
                             steps {
                                 sh '''
-                                if [ "\$(curl -o /dev/null - silent - head -write-out '%{http_code}' ec2-3-143-251-12.us-east-2.compute.amazonaws.com:8080/time)" -eq 200]
+                                if [ "\$(curl -o /dev/null - silent - head -write-out '%{http_code}' ubuntu@${greenTarget}:8080/time)" -eq 200]
                                 then
                                     echo "Build Successful"
-                                    curl -I ec2-3-143-251-12.us-east-2.compute.amazonaws.com
+                                    curl -I ubuntu@${greenTarget}
                                     aws elbv2 modify-listener – listener-arn ${listenerARN} – default-actions '[{"Type": "forward","Order": 1,"ForwardConfig": {"TargetGroups": [{"TargetGroupArn": "${greenARN}", "Weight": 0 },{"TargetGroupArn": "${blueARN}", "Weight": 1 }],"TargetGroupStickinessConfig": {"Enabled": true,"DurationSeconds": 1}}}]'
                                 else
                                     echo "Build Failure"
-                                    curl -I ec2-3-143-251-12.us-east-2.compute.amazonaws.com
+                                    curl -I ubuntu@${greenTarget}
                                 exit 2
                                 fi
                                 '''
@@ -61,21 +63,21 @@ pipeline {
                         }
                         stage('Deploying to Blue') {
                             steps {
-                                sh '''scp -v -o StrictHostKeyChecking=no -i /var/lib/jenkins/secrets/keypairklein.pem target/*jar ubuntu@ec2-3-16-114-63.us-east-2.compute.amazonaws.com:/home/ubuntu/RELEASE/${version}'''
-                                sh '''ssh -t ubuntu@ec2-3-16-114-63.us-east-2.compute.amazonaws.com "sudo java -jar ${oldversion} stop && sudo java -jar ${version}"'''
+                                sh '''scp -v -o StrictHostKeyChecking=no -i /var/lib/jenkins/secrets/keypairklein.pem target/*jar ubuntu@${blueTarget}:/home/ubuntu/RELEASE/${version}'''
+                                sh '''ssh -t ubuntu@${blueTarget} "sudo java -jar ${oldversion} stop && sudo java -jar ${version}"'''
                             }
                         }
                         stage('Validate Blue Deploy and Swap') {
                             steps {
                                 sh '''
-                                if [ "\$(curl -o /dev/null - silent - head -write-out '%{http_code}' ubuntu@ec2-3-16-114-63.us-east-2.compute.amazonaws.com:8080/time)" -eq 200]
+                                if [ "\$(curl -o /dev/null - silent - head -write-out '%{http_code}' ubuntu@${blueTarget}:8080/time)" -eq 200]
                                 then
                                     echo "Build Successful"
-                                    curl -I ubuntu@ec2-3-16-114-63.us-east-2.compute.amazonaws.com
+                                    curl -I ubuntu@${blueTarget}
                                     aws elbv2 modify-listener – listener-arn ${listenerARN} – default-actions '[{"Type": "forward","Order": 1,"ForwardConfig": {"TargetGroups": [{"TargetGroupArn": "${greenARN}", "Weight": 0 },{"TargetGroupArn": "${blueARN}", "Weight": 1 }],"TargetGroupStickinessConfig": {"Enabled": true,"DurationSeconds": 1}}}]'
                                 else
                                     echo "Build Failure"
-                                    curl -I ubuntu@ec2-3-16-114-63.us-east-2.compute.amazonaws.com
+                                    curl -I ubuntu@${blueTarget}
                                 exit 2
                                 fi
                                 '''
