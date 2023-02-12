@@ -6,9 +6,14 @@ pipeline {
         }
     }
     stages {
-        stage ('Build') {
+        stage('Build') {
             steps {
-                sh 'mvn -B -DskipTests /TimeServer/ clean package'
+                sh 'mvn -f var/lib/workspace/DockerTimeServer_main/TimeServer/pom.xml -B -DskipTests clean package'
+            }
+        }
+        stage('Test') {
+            steps {
+                sh 'mvn -f var/lib/workspace/DockerTimeServer_main/TimeServer/pom.xml test'
             }
         }
     }
