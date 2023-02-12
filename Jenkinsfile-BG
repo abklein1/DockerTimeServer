@@ -12,7 +12,7 @@ pipeline {
     }
     stages {
         stage('Begin Deploy') {
-            parrallel {
+            parallel {
                 stage('Green') {
                     when {
                         expression {
