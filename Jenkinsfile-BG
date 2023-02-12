@@ -26,7 +26,7 @@ pipeline {
                         stage('Deploying to Green') {
                             steps {
                                 sh '''scp -v -o StrictHostKeyChecking=no -i /var/lib/jenkins/secrets/keypairklein.pem target/*jar ubuntu@ec2-3-143-251-12.us-east-2.compute.amazonaws.com:/home/ubuntu/RELEASE/${version}'''
-                                sh '''ssh -t ubuntu@ec2-3-143-251-12.us-east-2.compute.amazonaws.com 'sudo java -jar ${oldversion} stop && sudo java -jar ${version}''''
+                                sh '''ssh -t ubuntu@ec2-3-143-251-12.us-east-2.compute.amazonaws.com "sudo java -jar ${oldversion} stop && sudo java -jar ${version}"'''
                             }
                         }
                         stage('Validate Green Deploy and Swap') {
@@ -62,7 +62,7 @@ pipeline {
                         stage('Deploying to Blue') {
                             steps {
                                 sh '''scp -v -o StrictHostKeyChecking=no -i /var/lib/jenkins/secrets/keypairklein.pem target/*jar ubuntu@ec2-3-16-114-63.us-east-2.compute.amazonaws.com:/home/ubuntu/RELEASE/${version}'''
-                                sh '''ssh -t ubuntu@ec2-3-16-114-63.us-east-2.compute.amazonaws.com 'sudo java -jar ${oldversion} stop && sudo java -jar ${version}''''
+                                sh '''ssh -t ubuntu@ec2-3-16-114-63.us-east-2.compute.amazonaws.com "sudo java -jar ${oldversion} stop && sudo java -jar ${version}"'''
                             }
                         }
                         stage('Validate Blue Deploy and Swap') {
