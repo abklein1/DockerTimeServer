@@ -2,8 +2,11 @@ pipeline {
     agent any
     parameters{
         choice (name: 'nodeChoice', choices: ['Green', 'Blue'], description: 'Deploy to either env: ')
+        string (name: 'oldVersion', defaultValue: '', description: 'Old jar version to remove')
+        string (name: 'version', defaultValue: '', description: 'jar version to deploy')
     }
     environment {
+        region = 'us-east-2'
         listenerARN = 'arn:aws:elasticloadbalancing:us-east-2:283044168142:listener/app/BG-load-balancer/fb5f67b4b97973d0/44f32aec7ee9095a'
         blueARN = 'arn:aws:elasticloadbalancing:us-east-2:283044168142:targetgroup/Blue/28fafd93d214aacb'
         greenARN = 'arn:aws:elasticloadbalancing:us-east-2:283044168142:targetgroup/Green/4cf40e1547e1c331'
@@ -22,13 +25,13 @@ pipeline {
                     stages {
                         stage('Offloading Green') {
                             steps {
-                                sh """aws elbv2 modify-listener --listener-arn ${listenerARN} --default-actions '[{"Type": "forward","Order": 1,"ForwardConfig": {"TargetGroups": [{"TargetGroupArn": "${greenARN}", "Weight": 0 },{"TargetGroupArn": "${blueARN}", "Weight": 1 }],"TargetGroupStickinessConfig": {"Enabled": true,"DurationSeconds": 1}}}]'"""
+                                sh """aws elbv2 modify-listener --region ${region} --listener-arn ${listenerARN} --default-actions '[{"Type": "forward","Order": 1,"ForwardConfig": {"TargetGroups": [{"TargetGroupArn": "${greenARN}", "Weight": 0 },{"TargetGroupArn": "${blueARN}", "Weight": 1 }],"TargetGroupStickinessConfig": {"Enabled": true,"DurationSeconds": 1}}}]'"""
                             }
                         }
                         stage('Deploying to Green') {
                             steps {
                                 sh '''scp -v -o StrictHostKeyChecking=no -i /var/lib/jenkins/secrets/keypairklein.pem target/*jar ubuntu@${greenTarget}:/home/ubuntu/RELEASE/${version}'''
-                                sh '''ssh -t ubuntu@${greenTarget} "sudo java -jar ${oldversion} stop && sudo java -jar ${version}"'''
+                                sh '''ssh -t ubuntu@${greenTarget} "sudo java -jar ${oldVersion} stop && sudo java -jar ${version}"'''
                             }
                         }
                         stage('Validate Green Deploy and Swap') {
@@ -38,7 +41,7 @@ pipeline {
                                 then
                                     echo "Build Successful"
                                     curl -I ubuntu@${greenTarget}
-                                    aws elbv2 modify-listener --listener-arn ${listenerARN} --default-actions '[{"Type": "forward","Order": 1,"ForwardConfig": {"TargetGroups": [{"TargetGroupArn": "${greenARN}", "Weight": 0 },{"TargetGroupArn": "${blueARN}", "Weight": 1 }],"TargetGroupStickinessConfig": {"Enabled": true,"DurationSeconds": 1}}}]'
+                                    aws elbv2 modify-listener --region ${region} --listener-arn ${listenerARN} --default-actions '[{"Type": "forward","Order": 1,"ForwardConfig": {"TargetGroups": [{"TargetGroupArn": "${greenARN}", "Weight": 0 },{"TargetGroupArn": "${blueARN}", "Weight": 1 }],"TargetGroupStickinessConfig": {"Enabled": true,"DurationSeconds": 1}}}]'
                                 else
                                     echo "Build Failure"
                                     curl -I ubuntu@${greenTarget}
@@ -64,7 +67,7 @@ pipeline {
                         stage('Deploying to Blue') {
                             steps {
                                 sh '''scp -v -o StrictHostKeyChecking=no -i /var/lib/jenkins/secrets/keypairklein.pem target/*jar ubuntu@${blueTarget}:/home/ubuntu/RELEASE/${version}'''
-                                sh '''ssh -t ubuntu@${blueTarget} "sudo java -jar ${oldversion} stop && sudo java -jar ${version}"'''
+                                sh '''ssh -t ubuntu@${blueTarget} "sudo java -jar ${oldVersion} stop && sudo java -jar ${version}"'''
                             }
                         }
                         stage('Validate Blue Deploy and Swap') {
