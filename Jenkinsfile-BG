@@ -32,7 +32,7 @@ pipeline {
                                 sh '''scp -v -o StrictHostKeyChecking=no -i /var/lib/jenkins/secrets/keypairklein.pem TimeServer/target/${version} ${greenTarget}:${version}'''
                                 script {
                                     sh '''
-                                        JENKINS_NODE_COOKIE=dontKillMe ssh -i /var/lib/jenkins/secrets/keypairklein.pem -tt ${greenTarget} "sudo ./start.sh"
+                                        ssh -i /var/lib/jenkins/secrets/keypairklein.pem ${greenTarget} "sudo ./start.sh"
                                     '''
                                 }
                             }
@@ -63,7 +63,7 @@ pipeline {
                                 sh '''scp -v -o StrictHostKeyChecking=no -i /var/lib/jenkins/secrets/keypairklein.pem TimeServer/target/${version} ${blueTarget}:${version}'''
                                 script {
                                     sh '''
-                                        JENKINS_NODE_COOKIE=dontKillMe ssh -i /var/lib/jenkins/secrets/keypairklein.pem -tt ${blueTarget} "sudo ./start.sh"
+                                        ssh -i /var/lib/jenkins/secrets/keypairklein.pem ${blueTarget} "sudo ./start.sh"
                                     '''
                                 }
                             }
