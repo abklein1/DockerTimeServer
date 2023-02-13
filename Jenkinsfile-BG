@@ -31,10 +31,14 @@ pipeline {
                         stage('Deploying to Green') {
                             steps {
                                 sh '''scp -v -o StrictHostKeyChecking=no -i /var/lib/jenkins/secrets/keypairklein.pem TimeServer/target/*.jar ${greenTarget}:${version}'''
-                                sh '''
-                                set -x
-                                ssh -i /var/lib/jenkins/secrets/keypairklein.pem -tt ${greenTarget} "sudo java -jar ${oldVersion} stop && sudo nohup java -jar ${version} >>/dev/null 2>&1 &"
-                                '''
+                                script {
+                                    withEnv(['JENKINS_NODE_COOKIE=dontkill']) {
+                                        sh '''
+                                            set -x
+                                            ssh -i /var/lib/jenkins/secrets/keypairklein.pem -tt ${greenTarget} "sudo java -jar ${oldVersion} stop && sudo nohup java -jar ${version} >>/dev/null 2>&1 &"
+                                        '''
+                                    }
+                                }
                             }
                         }
                         stage('Validate Green Deploy and Swap') {
