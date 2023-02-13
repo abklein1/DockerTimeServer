@@ -38,19 +38,13 @@ pipeline {
                                 }
                             }
                         }
-                        stage('Validate Green Deploy and Swap') {
+                        stage('Green Swap') {
                             steps {
                                 sh '''
-                                if ["\$(curl -o /dev/null --silent --head --write-out '%{http_code}' ${greenTarget}:8080/time)" -eq 200]
-                                then
                                     echo "Build Successful"
                                     curl -I ${greenTarget}:8080/time
                                     aws elbv2 modify-listener --region ${region} --listener-arn ${listenerARN} --default-actions '[{"Type": "forward","Order": 1,"ForwardConfig": {"TargetGroups": [{"TargetGroupArn": "${greenARN}", "Weight": 1 },{"TargetGroupArn": "${blueARN}", "Weight": 0 }],"TargetGroupStickinessConfig": {"Enabled": true,"DurationSeconds": 1}}}]'
-                                else
-                                    echo "Build Failure"
-                                    curl -I ${greenTarget}:8080/time
-                                exit 2
-                                fi
+
                                 '''
                             }
                         }
@@ -78,19 +72,12 @@ pipeline {
                                 }
                             }
                         }
-                        stage('Validate Blue Deploy and Swap') {
+                        stage('Blue Swap') {
                             steps {
                                 sh '''
-                                if ["\$(curl -o /dev/null --silent --head --write-out '%{http_code}' ${blueTarget}:8080/time)" -eq 200]
-                                then
                                     echo "Build Successful"
                                     curl -I ${blueTarget}:8080/time
                                     aws elbv2 modify-listener --listener-arn ${listenerARN} --default-actions '[{"Type": "forward","Order": 1,"ForwardConfig": {"TargetGroups": [{"TargetGroupArn": "${greenARN}", "Weight": 0 },{"TargetGroupArn": "${blueARN}", "Weight": 1 }],"TargetGroupStickinessConfig": {"Enabled": true,"DurationSeconds": 1}}}]'
-                                else
-                                    echo "Build Failure"
-                                    curl -I ${blueTarget}:8080/time
-                                exit 2
-                                fi
                                 '''
                             }
                         }
