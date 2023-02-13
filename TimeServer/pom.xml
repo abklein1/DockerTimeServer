@@ -38,6 +38,15 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+    				<include resource=
+      					"org/springframework/boot/logging/logback/defaults.xml" />
+    				<include resource=
+      					"org/springframework/boot/logging/logback/file-appender.xml" />
+    				<root level="INFO">
+        				<appender-ref ref="FILE" />
+    				</root>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
