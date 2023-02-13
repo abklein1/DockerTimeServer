@@ -33,7 +33,7 @@ pipeline {
                                 sh '''scp -v -o StrictHostKeyChecking=no -i /var/lib/jenkins/secrets/keypairklein.pem TimeServer/target/*.jar ${greenTarget}:${version}'''
                                 script {
                                     sh '''
-                                        JENKINS_NODE_COOKIE=dontKillMe ssh -i /var/lib/jenkins/secrets/keypairklein.pem -tt ${greenTarget} "sudo ./start.sh > /dev/null 2>&1"
+                                        JENKINS_NODE_COOKIE=dontKillMe ssh -i /var/lib/jenkins/secrets/keypairklein.pem -tt ${greenTarget} "sudo ./start.sh"
                                     '''
                                 }
                             }
@@ -41,14 +41,14 @@ pipeline {
                         stage('Validate Green Deploy and Swap') {
                             steps {
                                 sh '''
-                                if [ "\$(curl -o /dev/null --silent --head --write-out '%{http_code}' ${greenTarget}:8080/time)" -eq 200]
+                                if ["\$(curl -o /dev/null --silent --head --write-out '%{http_code}' ${greenTarget}:8080/time)" -eq 200]
                                 then
                                     echo "Build Successful"
-                                    curl -I ${greenTarget}:8080
+                                    curl -I ${greenTarget}:8080/time
                                     aws elbv2 modify-listener --region ${region} --listener-arn ${listenerARN} --default-actions '[{"Type": "forward","Order": 1,"ForwardConfig": {"TargetGroups": [{"TargetGroupArn": "${greenARN}", "Weight": 1 },{"TargetGroupArn": "${blueARN}", "Weight": 0 }],"TargetGroupStickinessConfig": {"Enabled": true,"DurationSeconds": 1}}}]'
                                 else
                                     echo "Build Failure"
-                                    curl -I ${greenTarget}:8080
+                                    curl -I ${greenTarget}:8080/time
                                 exit 2
                                 fi
                                 '''
@@ -73,7 +73,7 @@ pipeline {
                                 sh '''scp -v -o StrictHostKeyChecking=no -i /var/lib/jenkins/secrets/keypairklein.pem TimeServer/target/*.jar ${blueTarget}:${version}'''
                                 script {
                                     sh '''
-                                        JENKINS_NODE_COOKIE=dontKillMe ssh -i /var/lib/jenkins/secrets/keypairklein.pem -tt ${blueTarget} "sudo ./start.sh > /dev/null 2>&1"
+                                        JENKINS_NODE_COOKIE=dontKillMe ssh -i /var/lib/jenkins/secrets/keypairklein.pem -tt ${blueTarget} "sudo ./start.sh"
                                     '''
                                 }
                             }
@@ -81,14 +81,14 @@ pipeline {
                         stage('Validate Blue Deploy and Swap') {
                             steps {
                                 sh '''
-                                if [ "\$(curl -o /dev/null --silent --head --write-out '%{http_code}' ${blueTarget}:8080/time)" -eq 200]
+                                if ["\$(curl -o /dev/null --silent --head --write-out '%{http_code}' ${blueTarget}:8080/time)" -eq 200]
                                 then
                                     echo "Build Successful"
-                                    curl -I ${blueTarget}:8080
+                                    curl -I ${blueTarget}:8080/time
                                     aws elbv2 modify-listener --listener-arn ${listenerARN} --default-actions '[{"Type": "forward","Order": 1,"ForwardConfig": {"TargetGroups": [{"TargetGroupArn": "${greenARN}", "Weight": 0 },{"TargetGroupArn": "${blueARN}", "Weight": 1 }],"TargetGroupStickinessConfig": {"Enabled": true,"DurationSeconds": 1}}}]'
                                 else
                                     echo "Build Failure"
-                                    curl -I ${blueTarget}:8080
+                                    curl -I ${blueTarget}:8080/time
                                 exit 2
                                 fi
                                 '''
