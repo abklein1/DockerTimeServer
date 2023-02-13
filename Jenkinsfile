@@ -19,10 +19,18 @@ pipeline {
         }
         stage('Push to SCM') {
             steps {
-                sh 'git config --global user.name "abklein1"'
-                sh 'git config --global user.email "akendo21@gmail.com"'
-                sh 'git commit -am "Jenkins pushing jar to remote"'
-                sh 'git push origin main'
+                script{
+                    sshagent (credentials: ['f86e8604-aebb-4564-bd96-adf56e453913']) {
+                        sh '''
+                            git config --global user.name "abklein1"
+                            git config --global user.email "akendo21@gmail.com"
+                            git commit -am "Jenkins pushing jar to remote"
+                            git push origin main
+                        '''
+                    }
+
+                }
+
             }
         }
     }
