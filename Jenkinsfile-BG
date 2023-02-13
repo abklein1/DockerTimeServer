@@ -31,7 +31,7 @@ pipeline {
                         stage('Deploying to Green') {
                             steps {
                                 sh '''scp -v -o StrictHostKeyChecking=no -i /var/lib/jenkins/secrets/keypairklein.pem TimeServer/target/*.jar ${greenTarget}:${version}'''
-                                sh '''ssh -t ubuntu@${greenTarget} "sudo java -jar ${oldVersion} stop && sudo java -jar ${version}"'''
+                                sh '''ssh -t ${greenTarget} "sudo java -jar ${oldVersion} stop && sudo java -jar ${version}"'''
                             }
                         }
                         stage('Validate Green Deploy and Swap') {
