@@ -19,8 +19,8 @@ pipeline {
         }
         stage('Push to SCM') {
             steps {
-                sh 'git config --global user.name "jenkins"'
-                sh 'git config --global user.email ""'
+                sh 'git config --global user.name "abklein1"'
+                sh 'git config --global user.email "akendo21@gmail.com"'
                 sh 'git commit -am "Jenkins pushing jar to remote"'
                 sh 'git push origin main'
             }
