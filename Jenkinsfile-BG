@@ -32,11 +32,9 @@ pipeline {
                             steps {
                                 sh '''scp -v -o StrictHostKeyChecking=no -i /var/lib/jenkins/secrets/keypairklein.pem TimeServer/target/*.jar ${greenTarget}:${version}'''
                                 script {
-                                    withEnv(['JENKINS_NODE_COOKIE=dontKillMe']) {
-                                        sh '''
-                                            ssh -i /var/lib/jenkins/secrets/keypairklein.pem -tt ${greenTarget} "sudo nohup java -jar ${version} >>/dev/null 2>&1 &"
-                                        '''
-                                    }
+                                    sh '''
+                                        JENKINS_NODE_COOKIE=dontKillMe ssh -i /var/lib/jenkins/secrets/keypairklein.pem -tt ${greenTarget} "sudo nohup java -jar ${version} >>/dev/null 2>&1 &"
+                                    '''
                                 }
                             }
                         }
@@ -74,11 +72,9 @@ pipeline {
                             steps {
                                 sh '''scp -v -o StrictHostKeyChecking=no -i /var/lib/jenkins/secrets/keypairklein.pem TimeServer/target/*.jar ${blueTarget}:${version}'''
                                 script {
-                                    withEnv(['JENKINS_NODE_COOKIE=dontKillMe']) {
-                                        sh '''
-                                            ssh -i /var/lib/jenkins/secrets/keypairklein.pem -tt ${greenTarget} "sudo nohup java -jar ${version} >>/dev/null 2>&1 &"
-                                        '''
-                                    }
+                                    sh '''
+                                        JENKINS_NODE_COOKIE=dontKillMe ssh -i /var/lib/jenkins/secrets/keypairklein.pem -tt ${blueTarget} "sudo nohup java -jar ${version} >>/dev/null 2>&1 &"
+                                    '''
                                 }
                             }
                         }
