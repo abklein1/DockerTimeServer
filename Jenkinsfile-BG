@@ -35,7 +35,7 @@ pipeline {
                                     withEnv(['JENKINS_NODE_COOKIE=dontkill']) {
                                         sh '''
                                             set -x
-                                            ssh -i /var/lib/jenkins/secrets/keypairklein.pem -tt ${greenTarget} "sudo java -jar ${oldVersion} stop && sudo nohup java -jar ${version} >>/dev/null 2>&1 &"
+                                            ssh -i /var/lib/jenkins/secrets/keypairklein.pem -tt ${greenTarget} "sudo nohup java -jar ${version} >>/dev/null 2>&1 &"
                                         '''
                                     }
                                 }
@@ -74,10 +74,14 @@ pipeline {
                         stage('Deploying to Blue') {
                             steps {
                                 sh '''scp -v -o StrictHostKeyChecking=no -i /var/lib/jenkins/secrets/keypairklein.pem TimeServer/target/*.jar ${blueTarget}:${version}'''
-                                sh '''
-                                set -x
-                                ssh -i /var/lib/jenkins/secrets/keypairklein.pem -tt ${blueTarget} "sudo java -jar ${oldVersion} stop && sudo nohup java -jar ${version} >>/dev/null 2>&1 &"
-                                '''
+                                script {
+                                    withEnv(['JENKINS_NODE_COOKIE=dontkill']) {
+                                        sh '''
+                                            set -x
+                                            ssh -i /var/lib/jenkins/secrets/keypairklein.pem -tt ${greenTarget} "sudo nohup java -jar ${version} >>/dev/null 2>&1 &"
+                                        '''
+                                    }
+                                }
                             }
                         }
                         stage('Validate Blue Deploy and Swap') {
