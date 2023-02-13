@@ -19,7 +19,7 @@ pipeline {
         }
         stage('Push to SCM') {
             steps {
-                sh 'git commit -am "Jenkins pushing jar to remote"'
+                sh 'git commit --author="jenkins <>"  -am "Jenkins pushing jar to remote"'
                 sh 'git push origin main'
             }
         }
