@@ -29,10 +29,12 @@ def site_status():
                 http.read()
             last_byte_time = timeit.default_timer() - start_time
             connect = 'success'
+            status_code = response.status_code
     except requests.exceptions.RequestException as req:
         logging.debug(req)
+        status_code = 'N/A'
 
-    _package_data(last_byte=last_byte_time, connect=connect, response_code=response)
+    _package_data(last_byte=last_byte_time, connect=connect, response_code=status_code)
 
 
 def _package_data(last_byte, connect, response_code):
