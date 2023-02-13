@@ -37,7 +37,7 @@ pipeline {
                         stage('Validate Green Deploy and Swap') {
                             steps {
                                 sh '''
-                                if [ "\$(curl -o /dev/null - silent - head -write-out '%{http_code}' ${greenTarget}:8080/time)" -eq 200]
+                                if [ "\$(curl -o /dev/null --silent --head --write-out '%{http_code}' ${greenTarget}:8080/time)" -eq 200]
                                 then
                                     echo "Build Successful"
                                     curl -I ${greenTarget}
@@ -73,7 +73,7 @@ pipeline {
                         stage('Validate Blue Deploy and Swap') {
                             steps {
                                 sh '''
-                                if [ "\$(curl -o /dev/null - silent - head -write-out '%{http_code}' ${blueTarget}:8080/time)" -eq 200]
+                                if [ "\$(curl -o /dev/null --silent --head --write-out '%{http_code}' ${blueTarget}:8080/time)" -eq 200]
                                 then
                                     echo "Build Successful"
                                     curl -I ${blueTarget}
