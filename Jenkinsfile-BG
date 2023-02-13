@@ -2,7 +2,6 @@ pipeline {
     agent any
     parameters{
         choice (name: 'nodeChoice', choices: ['Green', 'Blue'], description: 'Deploy to either env: ')
-        string (name: 'oldVersion', defaultValue: '', description: 'Old jar version to remove')
         string (name: 'version', defaultValue: '', description: 'jar version to deploy')
     }
     environment {
