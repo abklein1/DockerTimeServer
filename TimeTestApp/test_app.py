@@ -18,7 +18,7 @@ status_list = []
 def site_status():
     last_byte_time = 'N/A'
     connect = 'failure'
-    response = ''
+    status_code = 'N/A'
 
     try:
         response = requests.get(WEB_ADDRESS, verify=False, timeout=15)
@@ -32,7 +32,6 @@ def site_status():
             status_code = response.status_code
     except requests.exceptions.RequestException as req:
         logging.debug(req)
-        status_code = 'N/A'
 
     _package_data(last_byte=last_byte_time, connect=connect, response_code=status_code)
 
