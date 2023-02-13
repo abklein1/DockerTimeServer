@@ -31,7 +31,7 @@ pipeline {
                         stage('Deploying to Green') {
                             steps {
                                 sh '''scp -v -o StrictHostKeyChecking=no -i /var/lib/jenkins/secrets/keypairklein.pem TimeServer/target/*.jar ${greenTarget}:${version}'''
-                                sh '''ssh -tt ${greenTarget} "sudo java -jar ${oldVersion} stop && sudo java -jar ${version}"'''
+                                sh '''ssh -i /var/lib/jenkins/secrets/keypairklein.pem -tt ${greenTarget} "sudo java -jar ${oldVersion} stop && sudo java -jar ${version}"'''
                             }
                         }
                         stage('Validate Green Deploy and Swap') {
@@ -67,7 +67,7 @@ pipeline {
                         stage('Deploying to Blue') {
                             steps {
                                 sh '''scp -v -o StrictHostKeyChecking=no -i /var/lib/jenkins/secrets/keypairklein.pem target/*jar ${blueTarget}:${version}'''
-                                sh '''ssh -tt ${blueTarget} "sudo java -jar ${oldVersion} stop && sudo java -jar ${version}"'''
+                                sh '''ssh -i /var/lib/jenkins/secrets/keypairklein.pem -tt ${blueTarget} "sudo java -jar ${oldVersion} stop && sudo java -jar ${version}"'''
                             }
                         }
                         stage('Validate Blue Deploy and Swap') {
