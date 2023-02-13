@@ -33,7 +33,7 @@ pipeline {
                                 sh '''scp -v -o StrictHostKeyChecking=no -i /var/lib/jenkins/secrets/keypairklein.pem TimeServer/target/*.jar ${greenTarget}:${version}'''
                                 sh '''
                                 set -x
-                                ssh -i /var/lib/jenkins/secrets/keypairklein.pem -tt ${greenTarget} "sudo java -jar ${oldVersion} stop && sudo ln -s ${version} /etc/init.d/${version} && sudo service ${version} start >/dev/null"
+                                ssh -i /var/lib/jenkins/secrets/keypairklein.pem -tt ${greenTarget} "sudo java -jar ${oldVersion} stop && sudo nohup java -jar ${version} >>/dev/null 2>&1 &"
                                 '''
                             }
                         }
@@ -72,7 +72,7 @@ pipeline {
                                 sh '''scp -v -o StrictHostKeyChecking=no -i /var/lib/jenkins/secrets/keypairklein.pem TimeServer/target/*.jar ${blueTarget}:${version}'''
                                 sh '''
                                 set -x
-                                ssh -i /var/lib/jenkins/secrets/keypairklein.pem -tt ${blueTarget} "sudo java -jar ${oldVersion} stop && sudo ln -s ${version} /etc/init.d/${version} && sudo service ${version} start >/dev/null"
+                                ssh -i /var/lib/jenkins/secrets/keypairklein.pem -tt ${blueTarget} "sudo java -jar ${oldVersion} stop && sudo nohup java -jar ${version} >>/dev/null 2>&1 &"
                                 '''
                             }
                         }
