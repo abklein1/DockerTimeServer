@@ -17,5 +17,11 @@ pipeline {
                 sh 'mvn -f TimeServer/pom.xml test'
             }
         }
+        stage('Push to SCM') {
+            steps {
+                sh 'git commit -am "Jenkins pushing jar to remote"'
+                sh 'git push origin main'
+            }
+        }
     }
 }
