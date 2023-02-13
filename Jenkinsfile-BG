@@ -29,7 +29,7 @@ pipeline {
                         }
                         stage('Deploying to Green') {
                             steps {
-                                sh '''scp -v -o StrictHostKeyChecking=no -i /var/lib/jenkins/secrets/keypairklein.pem TimeServer/target/*.jar ${greenTarget}:${version}'''
+                                sh '''scp -v -o StrictHostKeyChecking=no -i /var/lib/jenkins/secrets/keypairklein.pem TimeServer/target/${version}.jar ${greenTarget}:${version}'''
                                 script {
                                     sh '''
                                         JENKINS_NODE_COOKIE=dontKillMe ssh -i /var/lib/jenkins/secrets/keypairklein.pem -tt ${greenTarget} "sudo ./start.sh"
@@ -60,7 +60,7 @@ pipeline {
                         }
                         stage('Deploying to Blue') {
                             steps {
-                                sh '''scp -v -o StrictHostKeyChecking=no -i /var/lib/jenkins/secrets/keypairklein.pem TimeServer/target/*.jar ${blueTarget}:${version}'''
+                                sh '''scp -v -o StrictHostKeyChecking=no -i /var/lib/jenkins/secrets/keypairklein.pem TimeServer/target/${version}.jar ${blueTarget}:${version}'''
                                 script {
                                     sh '''
                                         JENKINS_NODE_COOKIE=dontKillMe ssh -i /var/lib/jenkins/secrets/keypairklein.pem -tt ${blueTarget} "sudo ./start.sh"
