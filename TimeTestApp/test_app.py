@@ -43,9 +43,9 @@ def _package_data(last_byte, connect, response_code):
     """
          Data collected from website is packaged in dict and appended to status list
          Parameters:
-             last_byte (str):
-             connect (str):
-             response_code (str):
+             last_byte (float): time to last byte
+             connect (str): connection status
+             response_code (str): response code from website
     """
     now = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
 
@@ -61,7 +61,7 @@ def _cycler(calls_per_second, callback, *args, **kw):
     """
          Loop that allows us to call a function x times a second
          Parameters:
-             calls_per_second (int):
+             calls_per_second (int): number of times to run function
              callback, *args, **kw: call function with variable-length of args
     """
     period = 1.0 / calls_per_second
