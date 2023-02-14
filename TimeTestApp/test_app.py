@@ -16,6 +16,9 @@ status_list = []
 
 
 def site_status():
+    """
+         Attempts to contact specified web address and collect basic data
+    """
     last_byte_time = 'N/A'
     connect = 'failure'
     status_code = 'N/A'
@@ -37,6 +40,13 @@ def site_status():
 
 
 def _package_data(last_byte, connect, response_code):
+    """
+         Data collected from website is packaged in dict and appended to status list
+         Parameters:
+             last_byte (str):
+             connect (str):
+             response_code (str):
+    """
     now = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
 
     data = {'time_to_last_byte': last_byte,
@@ -48,6 +58,12 @@ def _package_data(last_byte, connect, response_code):
 
 
 def _cycler(calls_per_second, callback, *args, **kw):
+    """
+         Loop that allows us to call a function x times a second
+         Parameters:
+             calls_per_second (int):
+             callback, *args, **kw: call function with variable-length of args
+    """
     period = 1.0 / calls_per_second
 
     def reload():
@@ -58,6 +74,11 @@ def _cycler(calls_per_second, callback, *args, **kw):
 
 
 def _json_to_file(data):
+    """
+         Take list of dicts and write to a json file
+         Parameters:
+             data ([dict]): a list containing collected statuses
+    """
     filename = _create_json_filename()
 
     with open(filename, 'w', encoding='utf-8') as json_file:
@@ -66,6 +87,11 @@ def _json_to_file(data):
 
 
 def _create_json_filename():
+    """
+         Generates a filename for json file based on datetime
+         Returns:
+             A generated json filename
+    """
     now = datetime.now().strftime('%Y%m%d%H%M%S')
     logging.debug('filename is %s.json', now)
     return f'{now}.json'
