@@ -20,7 +20,7 @@ public class TimeController {
 		
 		try {
 			Map<String, String> body = new HashMap<>();
-			body.put("datetime", timer.getTime());
+			body.put("status", "good");
 			body.put("datetime2", timer.getTime());
 			return new ResponseEntity<>(body, HttpStatus.OK);
 		} catch (Exception e) {
